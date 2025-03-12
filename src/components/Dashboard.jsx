@@ -1,61 +1,81 @@
 import React from "react";
 import Posts from "./Posts";
 import PostDetail from "./PostDetail";
+import AddPost from "./AddPost";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
-function Dashboard() { 
+function Dashboard() {
+
+    const API_URL = "http://localhost:8080/api/posts";
+    const [posts, setPosts] = useState([]);
+    //fetching data from API
+    useEffect(() => {
+        fetch(API_URL)
+            .then((response) => response.json())
+            .then((data) => {
+                setPosts(data);
+            });
+    }, []);
 
     
 
-    const [posts, setPosts] = useState([
-            { Id: 1, Title: "Post 1", Author: "Author 1" },
-            { Id: 2, Title: "Post 2", Author: "Author 2" },
-            { Id: 3, Title: "Post 3", Author: "Author 1" },
-    ]);
-
     const [newTitle, setNewTitle] = useState("");
     const [selectedPost, setSelectedPost] = useState(null);
+    const [isAddingNewPost, setIsAddingNewPost] = useState(false);
 
-    const updateFirstTitle = ( ) => {
+    const updateFirstTitle = () => {
 
         setPosts((prevPosts) => {
             const updatedPosts = [...prevPosts];
             updatedPosts[0].Title = newTitle;
             return updatedPosts;
         });
-    }
+    };
 
     const handlePostClick = (post) => {
-        setSelectedPost(post);
+        axios.get(`${API_URL}/${post.id}`)
+            .then((response) => {
+                setSelectedPost(response.data);
+                setIsAddingNewPost(false);
+            });
     };
 
-      const handleDeletePost = (post) => {
-        setPosts((prevPosts) => prevPosts.filter((p) => p.Id !== post.Id));
-        setSelectedPost(null);
+    const handleDeletePost = (post) => {
+        axios.delete(`${API_URL}/${post.id}`)
+            .then((response) => {
+                setPosts((prevPosts) => {
+                    return prevPosts.filter((p) => p.id !== post.id);
+                });
+                setSelectedPost(null);
+            });
     };
+
+    const handleNewPost = (newPost) => {
+        axios.post(API_URL, newPost)
+            .then((response) => {
+                setPosts((prevPosts) => [...prevPosts, response.data]);
+            });
+    };
+
+    const handleAddNewPostClick = () => {
+        setSelectedPost(null);
+        setIsAddingNewPost(true);
+    };
+
     return (
         <>
-            <Posts posts={posts} onClick={handlePostClick}></Posts>
-            <div className="flex justify-center items-center mt-4">
-                <input
-                    type="text"
-                    className="border border-gray-300 p-2 rounded mr-2"
-                    placeholder="Enter new title"
-                    onChange={(e) => setNewTitle(e.target.value)}>
-                    </input>
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    onClick={updateFirstTitle}
-                >
-                    Update 1st Post Title
-                </button>
-            </div>
-            {selectedPost && (
-                <div className="mt-4">
-                    <PostDetail
-                        post={selectedPost}
-                        onDelete={handleDeletePost}/>
-                </div>
+            <Posts posts={posts} onClick={handlePostClick} onNew={handleAddNewPostClick}></Posts>
+            {isAddingNewPost ? (
+                <AddPost onAdd={handleNewPost} />
+            ) : (
+                selectedPost && (
+                    <div className="mt-4">
+                        <PostDetail
+                            post={selectedPost}
+                            onDelete={handleDeletePost} />
+                    </div>
+                )
             )}
         </>
     );
