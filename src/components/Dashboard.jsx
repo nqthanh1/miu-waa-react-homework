@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useContext } from "react";
 import Posts from "./Posts";
 import PostDetail from "./PostDetail";
 import AddPost from "./AddPost";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { PostContext } from "../context/PostContext";
 
 function Dashboard() {
 
     const API_URL = "http://localhost:8080/api/posts";
     const [posts, setPosts] = useState([]);
+    const [newTitle, setNewTitle] = useState("");
+    //const [selectedPost, setSelectedPost] = useState(null);
+    const [isAddingNewPost, setIsAddingNewPost] = useState(false);
+    const [selectedPostId, setSelectedPostId] = useContext(PostContext);
+    
+
     //fetching data from API
     useEffect(() => {
         fetch(API_URL)
@@ -19,11 +26,6 @@ function Dashboard() {
     }, []);
 
     
-
-    const [newTitle, setNewTitle] = useState("");
-    const [selectedPost, setSelectedPost] = useState(null);
-    const [isAddingNewPost, setIsAddingNewPost] = useState(false);
-
     const updateFirstTitle = () => {
 
         setPosts((prevPosts) => {
@@ -34,11 +36,8 @@ function Dashboard() {
     };
 
     const handlePostClick = (post) => {
-        axios.get(`${API_URL}/${post.id}`)
-            .then((response) => {
-                setSelectedPost(response.data);
-                setIsAddingNewPost(false);
-            });
+        setSelectedPostId(post.id);
+        setIsAddingNewPost(false);
     };
 
     const handleDeletePost = (post) => {
@@ -47,7 +46,7 @@ function Dashboard() {
                 setPosts((prevPosts) => {
                     return prevPosts.filter((p) => p.id !== post.id);
                 });
-                setSelectedPost(null);
+                setSelectedPostId(null);
             });
     };
 
@@ -59,7 +58,7 @@ function Dashboard() {
     };
 
     const handleAddNewPostClick = () => {
-        setSelectedPost(null);
+        setSelectedPostId(null);
         setIsAddingNewPost(true);
     };
 
@@ -69,10 +68,9 @@ function Dashboard() {
             {isAddingNewPost ? (
                 <AddPost onAdd={handleNewPost} />
             ) : (
-                selectedPost && (
+                selectedPostId && (
                     <div className="mt-4">
                         <PostDetail
-                            post={selectedPost}
                             onDelete={handleDeletePost} />
                     </div>
                 )

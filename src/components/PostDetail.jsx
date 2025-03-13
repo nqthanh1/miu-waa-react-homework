@@ -1,38 +1,59 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import axios from "axios";
+import { useState, useEffect, useContext } from "react";
 import Comments from "./Comments";
+import { PostContext } from "../context/PostContext";
 
-function PostDetail({ post, onEdit, onDelete }) {
-    if (!post) return null;
-
+function PostDetail({ onEdit, onDelete }) {
     const API_URL = "http://localhost:8080/api/posts";
+
     const [comments, setComments] = useState([]);
+    const [selectedPostId, setSelectedPostId] = useContext(PostContext);
+    const [selectedPost, setSelectedPost] = useState(null);
+
+    if (!selectedPostId) return null;
+
     //fetching data from API
     useEffect(() => {
-        fetch(`${API_URL}/${post.id}/comments`)
-            .then((response) => response.json())
-            .then((data) => {
-                setComments(data);
-            });
-    }, [post]);
+        if (selectedPostId) {
+            axios.get(`${API_URL}/${selectedPostId}`)
+                .then((response) => {
+                    setSelectedPost(response.data);
+                });
+        }
+    }, [selectedPostId]);
+
+    useEffect(() => {
+        if (selectedPostId) {
+            axios.get(`${API_URL}/${selectedPostId}/comments`)
+                .then((response) => {
+                    setComments(response.data);
+                });
+        }
+    }, [selectedPostId]);
 
     return (
         <div className="bg-white text-black p-4 rounded-lg shadow-lg w-full border border-gray-300 m-2">
-            <p className="text-lg font-bold">Id: {post.id}</p>
-            <p className="text-lg mt-2"><span className="font-bold">Title:</span> {post.title}</p>
-            <p className="text-lg mt-2"><span className="font-bold">Content:</span> {post.content}</p>
-            <p className="text-lg mt-2"><span className="font-bold">Author:</span> {post.author}</p>
-            <Comments comments={comments} />
+            <p className="text-lg font-bold">Id: {selectedPostId}</p>
+            {selectedPost && (
+                <>
+                    <p className="text-lg mt-2"><span className="font-bold">Title:</span> {selectedPost.title}</p>
+                    <p className="text-lg mt-2"><span className="font-bold">Content:</span> {selectedPost.content}</p>
+                    <p className="text-lg mt-2"><span className="font-bold">Author:</span> {selectedPost.author}</p>
+            
+                </>
+            )}
+            {comments.length > 0 && <Comments comments={comments} />}
             <div className="mt-4 flex justify-end">
                 <button
                     className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700 mr-2"
-                    onClick={() => onEdit(post)}
+                    onClick={() => onEdit(selectedPost)}
                 >
                     Edit
                 </button>
                 <button
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
-                    onClick={() => onDelete(post)}
+                    onClick={() => onDelete(selectedPost)}
                 >
                     Delete
                 </button>
