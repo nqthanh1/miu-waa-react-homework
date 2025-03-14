@@ -1,9 +1,12 @@
 import React, { useRef } from "react";
+import config from "../config";  
+import axios from "axios";
 
 function AddPost({ onAdd }) {
     const titleRef = useRef();
     const contentRef = useRef();
     const authorRef = useRef();
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -12,9 +15,21 @@ function AddPost({ onAdd }) {
             content: contentRef.current.value,
             author: authorRef.current.value,
         };
-        onAdd(newPost);
-    };
 
+        // Send the new post to the API
+        axios.post(config.API_URL, newPost)
+            .then((response) => {
+                // Clear the form
+                titleRef.current.value = "";
+                contentRef.current.value = "";
+                authorRef.current.value = "";
+            })
+            .catch((error) => {
+                console.error("There was an error adding the post:", error);
+            });
+        
+        
+    };
     return (
         <form onSubmit={handleSubmit}>
             <div>

@@ -1,11 +1,12 @@
 import React from "react";
 import axios from "axios";
 import { useState, useEffect, useContext } from "react";
+import config from "../config";
 import Comments from "./Comments";
 import { PostContext } from "../context/PostContext";
 
 function PostDetail({ onEdit, onDelete }) {
-    const API_URL = "http://localhost:8080/api/posts";
+
 
     const [comments, setComments] = useState([]);
     const [selectedPostId, setSelectedPostId] = useContext(PostContext);
@@ -16,7 +17,7 @@ function PostDetail({ onEdit, onDelete }) {
     //fetching data from API
     useEffect(() => {
         if (selectedPostId) {
-            axios.get(`${API_URL}/${selectedPostId}`)
+            axios.get(`${config.API_URL}/${selectedPostId}`)
                 .then((response) => {
                     setSelectedPost(response.data);
                 });
@@ -25,7 +26,7 @@ function PostDetail({ onEdit, onDelete }) {
 
     useEffect(() => {
         if (selectedPostId) {
-            axios.get(`${API_URL}/${selectedPostId}/comments`)
+            axios.get(`${config.API_URL}/${selectedPostId}/comments`)
                 .then((response) => {
                     setComments(response.data);
                 });

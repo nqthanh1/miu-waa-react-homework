@@ -1,14 +1,14 @@
 import './styles/App.css'
-import { PostProvider } from './context/PostContext'
+import { BrowserRouter } from 'react-router-dom';
 import Dashboard from './components/Dashboard'
 
 function App() {
   return (
     <>
       <h1>WAA React Homework</h1>
-      <PostProvider>
+      <BrowserRouter>
         <Dashboard />
-      </PostProvider>
+      </BrowserRouter>
       
     </>
   );
